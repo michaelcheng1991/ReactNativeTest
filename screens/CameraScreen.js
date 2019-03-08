@@ -6,12 +6,26 @@ export default class CameraExample extends React.Component {
   state = {
     hasCameraPermission: null,
     type: Camera.Constants.Type.back,
+    photoURI: "",
   };
 
   async componentDidMount() {
     const { status } = await Permissions.askAsync(Permissions.CAMERA);
-    this.setState({ hasCameraPermission: status === 'granted' });
+    this.setState({ 
+      hasCameraPermission: status === 'granted' 
+    });
   }
+
+  snap = async () => {
+    if (this.camera) {
+      let photo = await this.camera.takePictureAsync();
+      console.log('photo', photo)
+      // now need to take photos and saved it to a row of small photo below
+      this.setState({
+        photoURI: photo.uri
+      })
+    }
+  };
 
   render() {
     const { hasCameraPermission } = this.state;
@@ -30,7 +44,11 @@ export default class CameraExample extends React.Component {
             }
             style={styles.welcomeImage}
           />
-          <Camera style={{ flex: 1 }} type={this.state.type}>
+          <Camera 
+            style={{ flex: 1 }} 
+            type={this.state.type}
+            ref={ref => { this.camera = ref; }}
+          >
             <View
               style={{
                 flex: 1,
@@ -55,8 +73,22 @@ export default class CameraExample extends React.Component {
                   {' '}Flip{' '}
                 </Text>
               </TouchableOpacity>
+              <TouchableOpacity
+                style={{
+                  flex: 0.1,
+                  alignSelf: 'flex-end',
+                  alignItems: 'center',
+                }}
+                onPress={this.snap}>
+                <Text
+                  style={{ fontSize: 18, marginBottom: 10, color: 'white' }}>
+                  Snap
+                </Text>
+              </TouchableOpacity>
+
             </View>
           </Camera>
+          <Image source={{uri: this.state.photoURI}} style={{width: 40, height: 40}} />
         </View>
       );
     }
